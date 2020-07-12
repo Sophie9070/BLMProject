@@ -20,7 +20,7 @@ p_load('shiny')
 p_load('shinyFiles')
 
 library(readr)
-BLMusers <- read_csv("BLMusers.csv") #change accordingly if using BotUsers
+BLMusers <- read_csv("BLMusers.csv") #change accordingly if using Right side
 
 BLMuserstest <- BLMusers$screen_name[1:150] # botusers a csv I imported of all the screennames, screen_name is a column name
 data1 <- tweetbotornot(BLMuserstest)
