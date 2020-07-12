@@ -1,0 +1,36 @@
+# Set libPaths.
+.libPaths("/Users/sophiadhanani/.exploratory/R/3.6")
+
+# Load required packages.
+library(janitor)
+library(lubridate)
+library(hms)
+library(tidyr)
+library(stringr)
+library(readr)
+library(forcats)
+library(RcppRoll)
+library(dplyr)
+library(tibble)
+library(bit64)
+library(exploratory)
+
+# Steps to produce the output
+exploratory::select_columns(exploratory::clean_data_frame(exploratory::read_delim_file("/Users/sophiadhanani/Dropbox/BLMjune25/BLMcombinedjune25at630PM.csv" , ",", quote = "\"", skip = 0 , col_names = TRUE , na = c('','NA') , locale=readr::locale(encoding = "UTF-8", decimal_mark = ".", grouping_mark = "," ), trim_ws = TRUE , progress = FALSE)),"X1","user_id","status_id","created_at","screen_name","text","source","is_quote","is_retweet","favorite_count","retweet_count","hashtags","media_type","mentions_user_id","mentions_screen_name","lang","quoted_status_id","quoted_text","quoted_created_at","quoted_source","quoted_favorite_count","quoted_retweet_count","quoted_user_id","quoted_screen_name","quoted_verified","place_full_name","place_type","country","country_code","status_url","name","location","description","url","protected","followers_count","friends_count","listed_count","statuses_count","favourites_count","account_created_at","verified","profile_url") %>%
+  readr::type_convert() %>%
+  drop_na(X1) %>%
+  mutate(created_at = ymd_hms(created_at)) %>%
+  filter(!between(created_at, ymd_hms("2020-06-03 00:00:00"), ymd_hms("2020-06-10 10:00:00"))) %>%
+  arrange(created_at) %>%
+  distinct(status_id, .keep_all = TRUE) %>%
+  mutate(side = (str_detect(text, regex("alllivesmatter", ignore_case=TRUE)) & str_detect(text, regex("trump2020", ignore_case=TRUE)))) %>%
+  mutate(side = recode(factor(side), `TRUE` = "1", `FALSE` = "0")) %>%
+  arrange(desc(side)) %>%
+  arrange(created_at) %>%
+  distinct(screen_name, .keep_all = TRUE) %>%
+  filter(side == "0") %>%
+  arrange(desc(user_id)) %>%
+  mutate(numrows = row_number()) %>%
+  select(screen_name, numrows) %>%
+  top_n(-4427, numrows) %>%
+  select(screen_name)
